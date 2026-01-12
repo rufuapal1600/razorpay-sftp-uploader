@@ -50,7 +50,8 @@ app.post('/upload-invoice', async (req, res) => {
     const now = new Date();
     const dateFolder = now.toISOString().split('T')[0];
     const filename = `${invoiceNumber}.pdf`;
-    const remotePath = `${SFTP_CONFIG.pathPrefix}${dateFolder}/${filename}`;
+const remotePath = `${SFTP_CONFIG.pathPrefix}${filename}`; // TEST: No date folder
+console.log(`TEST: Uploading without date folder: ${remotePath}`);
 
     console.log(`Uploading to: ${remotePath}`);
 
