@@ -67,12 +67,19 @@ app.post('/upload-invoice', async (req, res) => {
 
       console.log('SFTP connected');
 
-      // Ensure directory exists
-      const dirPath = `${SFTP_CONFIG.pathPrefix}${dateFolder}`;
-      await sftp.mkdir(dirPath, true); // recursive: true
-
-      // Upload file
-      await sftp.put(pdfBuffer, remotePath);
+// Upload file directly (Razorpay creates date folders automatically)
+try {
+  await sftp.put(pdfBuffer, remotePath);
+} catch (uploadError) {
+  // If path doesn't exist, try creating directory first
+  if (uploadError.message?.includes('No such file')) {
+    const dirPath = `${SFTP_CONFIG.pathPrefix}${dateFolder}`;
+    await sftp.mkdir(dirPath, true);
+    await sftp.put(pdfBuffer, remotePath);
+  } else {
+    throw uploadError;
+  }
+}
 
       console.log('Upload successful');
 
