@@ -50,10 +50,9 @@ app.post('/upload-invoice', async (req, res) => {
     const now = new Date();
     const dateFolder = now.toISOString().split('T')[0];
     const filename = `${invoiceNumber}.pdf`;
-const remotePath = `${SFTP_CONFIG.pathPrefix}${filename}`; // TEST: No date folder
-console.log(`TEST: Uploading without date folder: ${remotePath}`);
+    const remotePath = `${SFTP_CONFIG.pathPrefix}${dateFolder}/${filename}`;
 
-    console.log(`Uploading to: ${remotePath}`);
+    console.log(`Target path: ${remotePath}`);
 
     // Upload via SFTP
     const sftp = new SftpClient();
@@ -68,20 +67,26 @@ console.log(`TEST: Uploading without date folder: ${remotePath}`);
 
       console.log('SFTP connected');
 
-// Upload file directly (Razorpay creates date folders automatically)
-try {
-  await sftp.put(pdfBuffer, remotePath);
-} catch (uploadError) {
-  // If path doesn't exist, try creating directory first
-  if (uploadError.message?.includes('No such file')) {
-    const dirPath = `${SFTP_CONFIG.pathPrefix}${dateFolder}`;
-    await sftp.mkdir(dirPath, true);
-    await sftp.put(pdfBuffer, remotePath);
-  } else {
-    throw uploadError;
-  }
-}
+      // Create date folder first (Razorpay doesn't auto-create)
+      const dirPath = `${SFTP_CONFIG.pathPrefix}${dateFolder}`;
+      console.log(`Creating directory: ${dirPath}`);
 
+      try {
+        await sftp.mkdir(dirPath, false); // Don't use recursive
+        console.log('Directory created successfully');
+      } catch (mkdirError) {
+        // Ignore error if directory already exists
+        if (mkdirError.code === 4 || mkdirError.message?.includes('exist')) {
+          console.log('Directory already exists, proceeding with upload');
+        } else {
+          console.error('Directory creation error:', mkdirError);
+          throw mkdirError;
+        }
+      }
+
+      // Now upload the file
+      console.log(`Uploading file to: ${remotePath}`);
+      await sftp.put(pdfBuffer, remotePath);
       console.log('Upload successful');
 
       await sftp.end();
