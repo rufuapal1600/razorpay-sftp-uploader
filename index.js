@@ -11,7 +11,7 @@ const SFTP_CONFIG = {
   host: 's-20628a7a7d07456a8.server.transfer.ap-south-1.amazonaws.com',
   port: 22,
   username: 'rzp-Variyaan-sftp',
-  pathPrefix: 'automated/Rnp5iD5fwiYebZ/' // Removed /invoiceUpload/
+pathPrefix: '/automated/Rnp5iD5fwiYebZ/'
 };
 
 // Health check endpoint
