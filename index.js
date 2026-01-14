@@ -11,7 +11,7 @@ const SFTP_CONFIG = {
   host: 's-20628a7a7d07456a8.server.transfer.ap-south-1.amazonaws.com',
   port: 22,
   username: 'rzp-Variyaan-sftp',
-pathPrefix: '/automated/Rnp5iD5fwiYebZ/'
+  pathPrefix: '/automated/Rnp5iD5fwiYebZ/' // With leading slash
 };
 
 // Health check endpoint
@@ -67,24 +67,10 @@ app.post('/upload-invoice', async (req, res) => {
 
       console.log('SFTP connected');
 
-      // Create date folder first (Razorpay doesn't auto-create)
-      const dirPath = `${SFTP_CONFIG.pathPrefix}${dateFolder}`;
-      console.log(`Creating directory: ${dirPath}`);
+      // Skip mkdir - attempt direct upload (Razorpay may auto-create folders)
+      console.log('Attempting direct upload without mkdir');
 
-      try {
-        await sftp.mkdir(dirPath, false); // Don't use recursive
-        console.log('Directory created successfully');
-      } catch (mkdirError) {
-        // Ignore error if directory already exists
-        if (mkdirError.code === 4 || mkdirError.message?.includes('exist')) {
-          console.log('Directory already exists, proceeding with upload');
-        } else {
-          console.error('Directory creation error:', mkdirError);
-          throw mkdirError;
-        }
-      }
-
-      // Now upload the file
+      // Upload the file directly
       console.log(`Uploading file to: ${remotePath}`);
       await sftp.put(pdfBuffer, remotePath);
       console.log('Upload successful');
