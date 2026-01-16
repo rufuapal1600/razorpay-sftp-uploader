@@ -11,7 +11,7 @@ const SFTP_CONFIG = {
   host: 's-20628a7a7d07456a8.server.transfer.ap-south-1.amazonaws.com',
   port: 22,
   username: 'rzp-Variyaan-sftp',
-  pathPrefix: '/automated/Rnp5iD5fwiYebZ/' // With leading slash
+  pathPrefix: 'invoiceUpload/automated/Rnp5iD5fwiYebZ/' // No leading slash per Suraj
 };
 
 // Health check endpoint
@@ -67,10 +67,7 @@ app.post('/upload-invoice', async (req, res) => {
 
       console.log('SFTP connected');
 
-      // Skip mkdir - attempt direct upload (Razorpay may auto-create folders)
-      console.log('Attempting direct upload without mkdir');
-
-      // Upload the file directly
+      // Attempt direct upload (no mkdir per previous attempt)
       console.log(`Uploading file to: ${remotePath}`);
       await sftp.put(pdfBuffer, remotePath);
       console.log('Upload successful');
