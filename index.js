@@ -11,7 +11,7 @@ const SFTP_CONFIG = {
   host: 's-20628a7a7d07456a8.server.transfer.ap-south-1.amazonaws.com',
   port: 22,
   username: 'rzp-Variyaan-sftp',
-  pathPrefix: 'invoiceUpload/automated/Rnp5iD5fwiYebZ/' // No leading slash per Suraj
+  pathPrefix: '' // Empty - home directory already set by AWS Transfer
 };
 
 // Health check endpoint
@@ -50,7 +50,7 @@ app.post('/upload-invoice', async (req, res) => {
     const now = new Date();
     const dateFolder = now.toISOString().split('T')[0];
     const filename = `${invoiceNumber}.pdf`;
-    const remotePath = `${SFTP_CONFIG.pathPrefix}${dateFolder}/${filename}`;
+    const remotePath = `${dateFolder}/${filename}`; // Just date folder, no prefix
 
     console.log(`Target path: ${remotePath}`);
 
@@ -67,7 +67,7 @@ app.post('/upload-invoice', async (req, res) => {
 
       console.log('SFTP connected');
 
-      // Attempt direct upload (no mkdir per previous attempt)
+      // Upload file directly (home directory prepends base path)
       console.log(`Uploading file to: ${remotePath}`);
       await sftp.put(pdfBuffer, remotePath);
       console.log('Upload successful');
